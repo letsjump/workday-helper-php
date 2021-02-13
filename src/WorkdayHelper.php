@@ -1,6 +1,6 @@
 <?php
 
-namespace letsjump\WorkDayHelper;
+namespace letsjump\workdayHelper;
 
 /**
  * Class WorkdayHelper
