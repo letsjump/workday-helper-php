@@ -1,0 +1,18 @@
+{
+    "name": "letsjump/workday-helper",
+    "description": "Count work days in a range of dates with PHP while taking care of public holidays and other custom closing days.",
+    "type": "library",
+    "keywords": ["holidays", "calendar", "workdays", "employee", "work"],
+    "require": {
+        "php": "7.0",
+        "ext-calendar": "^7.4"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Gianpaolo Scrigna",
+            "email": "letsjump@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
