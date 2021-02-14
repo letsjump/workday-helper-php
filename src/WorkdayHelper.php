@@ -2,94 +2,14 @@
 
 namespace letsjump\workdayHelper;
 
+use yii\base\InvalidConfigException;
+
 /**
  * Class WorkdayHelper
  *
- * Returns the number of the days worked and the holidays
- * plus an array with the custom closures
- * for a specific range of dates.
- *
- * Inspired by Massimo Simonini getWorkdays() Function
- *
- * @see     https://gist.github.com/massiws/9593008
- *
- * It also has:
- * - the possibility to specify any worked day in a week (see $shift)
- * - a method to add custom holidays or business closures, also as a result of a database query
- * - a way to return a calendar of holidays for that specific range of date
- * - the possibility to use your custom holiday calendar (see $publicHolidays)
- * - it take care to the timezone of your application
- * - it calculates the easter and the easter monday dates taking care of the timezone
- *
- * CALENDAR:
- * @note    if you want to retrive all the closing days you need to set all the days of the week
- * into the $shift Array E.G. $myWorkDay->shift[0,1,2,3,4,5,6].
- * Output format:
- *       [
- *          [1609455600] => [
- *              [unixTimestamp] => 1609455600,
- *              [date] => 2021-01-01, # control the format with $outputFormat property
- *              [event] => Capodanno, # description of the event
- *              [type] => public, #public / custom
- *              [options] => # custom option passed by the $customClosing Array
- *          ],
- *
- *          ...
- *       ]
- *
- * @warning The automatic easter calculator requires php compiled with --enable-calendar
- * @see     https://stackoverflow.com/questions/5297894/fatal-error-call-to-undefined-function-easter-date/51609625
- *
- *  =================
- *  USAGE:
- *  =================
- *
- * 1. count the day worked in january while working from monday to friday, taking care of public holidays:
- *
- * $closingDays                 = new WorkdayHelper('2021-01-01', '2021-01-31');
- * $closingDays->shift          = [1, 2, 3, 4, 5];
- * echo $closingDays->getWorkdays();
- *
- *  =================
- *
- * 2. count the day worked in april while working monday, wednesday and friday, taking care of public holidays:
- *
- * $closingDays                 = new WorkdayHelper('2021-04-01', '2021-04-30');
- * $closingDays->shift          = [1, 3, 5];
- * echo $closingDays->getWorkdays();
- *
- *  =================
- *
- * 3. Add a strike to the custom closing days
- *
- * $closingDays                 = new WorkdayHelper('2021-01-01', '2021-01-31');
- * $closingDays->shift          = [1, 2, 3, 4, 5];
- * $closingDays->customClosing = [
- *      [
- *          'date'    => '2021-01-18',
- *          'event'   => 'Strike!',
- *          'options' => [
- *              'id'        => 345,
- *              'htmlClass' => 'green'
- *          ]
- *      ],
- * ];
- * echo $closingDays->getWorkdays();
- *
- *  =================
- *  4. Get the calendar with all the closing days for a specific date interval
- *
- * $closingDays                 = new WorkdayHelper('2021-01-01', '2021-12-31');
- * $closingDays->shift          = [0, 1, 2, 3, 4, 5, 6]; // don't forget to set every day of the week!
- *
- * <table>
- * <?php foreach ($closingDays->getCalendar() as $holiday): ?>
- * <tr>
- *      <td><?= $holiday['date'] ?></td>
- *      <td><?= $holiday['event'] ?></td>
- * </tr>
- * <?php endforeach ?>
- * </table>
+ * Count work days and list holiday events in a range of dates with PHP taking care of public holidays and other custom
+ * closing days.
+ * Inspired by Massimo Simonini getWorkdays() Function. See https://gist.github.com/massiws/9593008
  *
  * @author  Gianpaolo Scrigna <letsjump@gmail.com>
  */
@@ -100,10 +20,10 @@ class WorkdayHelper
     
     /**
      * @var int[] days to consider as worked
-     * in a week, where monday = 0 and saturday = 6
+     * in a week, where sunday == 0 and saturday == 6
      * @see
      */
-    public $shift = [1, 2, 3, 4, 5];
+    public $workingDays = [1, 2, 3, 4, 5];
     
     /**
      * @var string date format for the closing days output list
@@ -150,11 +70,8 @@ class WorkdayHelper
      */
     public $publicHolidays = [
         [
-            'm-d'   => '01-01',
-            'event' => 'Capodanno',
-            'options' => [
-                'htmlClass' => 'blue'
-            ]
+            'm-d'     => '01-01',
+            'event'   => 'Capodanno',
         ],
         [
             'm-d'   => '01-06',
@@ -220,7 +137,7 @@ class WorkdayHelper
     public function getWorkdays()
     {
         if ($this->workdays === null) {
-            $this->getClosing();
+            $this->run();
         }
         
         return $this->workdays;
@@ -233,7 +150,7 @@ class WorkdayHelper
     public function getCalendar()
     {
         if ($this->workdays === null) {
-            $this->getClosing();
+            $this->run();
         }
         
         return $this->holidays;
@@ -283,7 +200,7 @@ class WorkdayHelper
                         throw new \InvalidArgumentException('Malformed PublicHoliday array. m-d or event key doesn\'t exists');
                     }
                     $dateObject = new \DateTime($year . '-' . $holiday['m-d']);
-                    $options = $holiday['options'] ?? null;
+                    $options    = $holiday['options'] ?? null;
                     $this->addClosing($dateObject, $holiday['event'], self::TYPE_PUBLIC, $options);
                 } catch (\Exception $e) {
                     var_dump($e->getMessage());
@@ -297,6 +214,7 @@ class WorkdayHelper
     
     /**
      * @param integer $year
+     *
      * @throws \InvalidArgumentException
      *
      * Calculate the easter days for the year passed
@@ -304,11 +222,15 @@ class WorkdayHelper
     private function addEasterDates($year)
     {
         try {
-            $equinox = new \DateTime($year . "-03-21");
-            $easterObject = $equinox->add(new \DateInterval('P' . easter_days($year) . 'D'));
-            $this->addClosing($easterObject, 'Pasqua', self::TYPE_PUBLIC);
-            $easterMondayObject = $easterObject->add(new \DateInterval('P1D'));
-            $this->addClosing($easterMondayObject, 'Lunedì dell\'Angelo', self::TYPE_PUBLIC);
+            if(function_exists('easter_days')) {
+                $equinox      = new \DateTime($year . "-03-21");
+                $easterObject = $equinox->add(new \DateInterval('P' . easter_days($year) . 'D'));
+                $this->addClosing($easterObject, 'Pasqua', self::TYPE_PUBLIC);
+                $easterMondayObject = $easterObject->add(new \DateInterval('P1D'));
+                $this->addClosing($easterMondayObject, 'Lunedì dell\'Angelo', self::TYPE_PUBLIC);
+            } else {
+                throw new InvalidConfigException("ext-calendar not found in your PHP installation");
+            }
         } catch (\Exception $e) {
             var_dump($e->getMessage());
         }
@@ -341,7 +263,7 @@ class WorkdayHelper
      *
      * @throws \InvalidArgumentException
      */
-    private function getClosing()
+    private function run()
     {
         $this->addPublicHolidays();
         $this->addCustomClosing();
@@ -351,7 +273,7 @@ class WorkdayHelper
             $unixDay)
         ) {
             $dayOfWeek = date("w", $unixDay);
-            if (in_array((int)$dayOfWeek, $this->shift, true)) {
+            if (in_array((int)$dayOfWeek, $this->workingDays, true)) {
                 if ( ! array_key_exists($unixDay, $this->closing)) {
                     $this->workdays++;
                 } else {

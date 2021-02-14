@@ -1,10 +1,10 @@
 {
-    "name": "letsjump/workday-helper",
-    "description": "Count work days in a range of dates with PHP while taking care of public holidays and other custom closing days.",
+    "name": "letsjump/workday-helper-php",
+    "description": "Count work days and list holiday events in a range of dates with PHP taking care of public holidays and other custom closing days.",
     "type": "library",
-    "keywords": ["holidays", "calendar", "workdays", "employee", "work", "shift"],
+    "keywords": ["holidays", "calendar", "workdays", "employee", "work", "shift", "list holidays", "business"],
     "require": {
-        "php": "^7.0 || ^8.0",
+        "php": ">=5.6",
         "ext-calendar": "*"
     },
     "autoload": {
