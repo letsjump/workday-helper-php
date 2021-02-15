@@ -4,8 +4,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.0.0-BETA | :construction: |
-| 0.x.x  | :x:                |
+| 1.0.0 | :construction: |
 
 ## Reporting a Vulnerability
 
