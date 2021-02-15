@@ -43,22 +43,6 @@ class WorkdayHelper
      *            - event ([string] name of the event)
      * The optional array key `options` can contain any custom variable you need
      * and it will be passed as is to the closing days output list
-     * @example
-     * [
-     *          [
-     *              'date'    => '2021-01-05',
-     *              'event'   => 'Sciopero generale',
-     *              'options' => [
-     *                   'id'        => 345,
-     *                   'htmlClass' => 'green'
-     *              ]
-     *          ],
-     *          [
-     *              'date'  => '2021-01-10',
-     *              'event' => 'Chiusura per ferie'
-     *          ],
-     *          ...
-     * ]
      */
     public $customClosing = [];
     
