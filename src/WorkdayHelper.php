@@ -184,7 +184,7 @@ class WorkdayHelper
                         throw new \InvalidArgumentException('Malformed PublicHoliday array. m-d or event key doesn\'t exists');
                     }
                     $dateObject = new \DateTime($year . '-' . $holiday['m-d']);
-                    $options    = $holiday['options'] ?? null;
+                    $options    = isset($holiday['options']) ? $holiday['options'] : null;
                     $this->addClosing($dateObject, $holiday['event'], self::TYPE_PUBLIC, $options);
                 } catch (\Exception $e) {
                     var_dump($e->getMessage());
@@ -232,7 +232,7 @@ class WorkdayHelper
                         throw new \InvalidArgumentException('Malformed CustomClosure array. Date or event key doesn\'t exists');
                     }
                     if (($dateObject = new \DateTime($closure['date'])) !== false) {
-                        $options = $closure['options'] ?? null;
+                        $options = isset($closure['options']) ? $closure['options'] : null;
                         $this->addClosing($dateObject, $closure['event'], self::TYPE_CUSTOM, $options);
                     }
                 } catch (\Exception $e) {

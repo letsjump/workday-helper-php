@@ -5,7 +5,7 @@ Inspired by Massimo Simonini getWorkdays() Gist.
 @see     https://gist.github.com/massiws/9593008
 
 Benefits and features:
-- you can specify a range of working days in a week (from monday to sunday);
+- you can specify a range of working days in a week (from Monday to Sunday);
 - you can add custom holidays and business closures, for example as a result of a database query;
 - it returns a calendar of holidays for that specific range of dates;
 - you can use your custom recursive holiday calendar (see `$publicHolidays`);
