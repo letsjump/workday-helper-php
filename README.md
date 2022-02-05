@@ -1,8 +1,9 @@
-![Packagist Version](https://img.shields.io/packagist/v/letsjump/workday-helper-php)
 ![Packagist Downloads](https://img.shields.io/packagist/dt/letsjump/workday-helper-php)
+![Packagist License](https://img.shields.io/packagist/l/letsjump/workday-helper-php)
+![Packagist Version](https://img.shields.io/packagist/v/letsjump/workday-helper-php)
 ![GitHub issues](https://img.shields.io/github/issues/letsjump/workday-helper-php)
-![GitHub](https://img.shields.io/github/license/letsjump/workday-helper-php)
 ![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/letsjump/workday-helper-php)
+![Scrutinizer code quality (GitHub/Bitbucket)](https://img.shields.io/scrutinizer/quality/g/letsjump/workday-helper-php)
 
 # WorkdayHelper
 Count workdays and list holiday events in a range of dates with PHP taking care of public holidays and other custom closing days.
